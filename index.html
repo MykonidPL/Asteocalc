@@ -1,0 +1,298 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<title>AstroCalc</title>
+<meta name="theme-color" content="#0b0d12" />
+<meta name="mobile-web-app-capable" content="yes" />
+<meta name="apple-mobile-web-app-capable" content="yes" />
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+<meta name="apple-mobile-web-app-title" content="AstroCalc" />
+<link rel="manifest" href="manifest.webmanifest" />
+<link rel="icon" type="image/png" sizes="192x192" href="icon-192.png" />
+<link rel="apple-touch-icon" href="icon-192.png" />
+<style>
+:root{
+  --bg:#0b0d12; --panel:#121722; --panel2:#171d2a; --text:#eef3ff; --muted:#8d9ab0;
+  --line:#283246; --accent:#70a7ff; --accent2:#9b7cff; --good:#55d68a; --warn:#f0c35a; --bad:#ff6b7a;
+  --shadow:0 18px 50px rgba(0,0,0,.34); --radius:18px;
+}
+*{box-sizing:border-box}
+html,body{margin:0;background:radial-gradient(900px 520px at 10% -10%,rgba(112,167,255,.16),transparent 55%),radial-gradient(700px 420px at 100% 0%,rgba(155,124,255,.11),transparent 60%),var(--bg);color:var(--text);font-family:Inter,ui-sans-serif,system-ui,-apple-system,"Segoe UI",Roboto,Arial,sans-serif}
+body{min-height:100vh;padding:16px}
+.widget{width:min(100%,760px);margin:0 auto;background:rgba(18,23,34,.92);border:1px solid rgba(255,255,255,.08);border-radius:24px;box-shadow:var(--shadow);overflow:hidden;backdrop-filter:blur(16px)}
+.head{padding:18px 18px 12px;border-bottom:1px solid var(--line);background:linear-gradient(180deg,rgba(255,255,255,.025),transparent)}
+.brand{display:flex;align-items:center;justify-content:space-between;gap:12px}
+.brand h1{font-size:19px;line-height:1.2;margin:0;font-weight:780;letter-spacing:.2px}.brand small{display:block;color:var(--muted);font-weight:500;margin-top:4px}
+.badge{font-size:11px;color:#cfe0ff;border:1px solid #34517f;background:#13233c;border-radius:999px;padding:6px 9px;white-space:nowrap}.installBtn{display:none;appearance:none;border:1px solid #44669d;background:linear-gradient(135deg,#173054,#261f45);color:#fff;border-radius:999px;padding:6px 10px;font-size:11px;font-weight:750;cursor:pointer;white-space:nowrap}.installBtn.show{display:inline-block}
+.tabs{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-top:14px}
+.tab{appearance:none;border:1px solid var(--line);background:#0f1420;color:#b8c2d2;border-radius:12px;padding:9px 6px;font-weight:700;font-size:12px;cursor:pointer}.tab.active{background:linear-gradient(135deg,#173054,#261f45);border-color:#44669d;color:#fff}
+.body{padding:16px}.pane{display:none}.pane.active{display:block}
+.grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}.grid.three{grid-template-columns:repeat(3,minmax(0,1fr))}.full{grid-column:1/-1}
+.card{background:linear-gradient(180deg,var(--panel2),#131925);border:1px solid var(--line);border-radius:var(--radius);padding:14px}
+.card h2{font-size:15px;margin:0 0 4px}.desc{color:var(--muted);font-size:12px;line-height:1.45;margin:0 0 12px}
+label{display:block;color:#a9b4c7;font-size:11px;font-weight:700;margin:0 0 6px;text-transform:uppercase;letter-spacing:.06em}
+input,select{width:100%;border:1px solid #344057;background:#0d121c;color:#f4f7ff;border-radius:11px;padding:10px 11px;font-size:14px;outline:none;transition:.15s}input:focus,select:focus{border-color:#5f8fd7;box-shadow:0 0 0 3px rgba(112,167,255,.12)}
+.row{display:grid;grid-template-columns:1fr 1fr;gap:10px}.field{margin-bottom:10px}.field:last-child{margin-bottom:0}
+.result{margin-top:12px;padding:13px;border:1px solid #30405d;background:#0f1623;border-radius:14px}.result .big{font-size:24px;font-weight:820;letter-spacing:-.02em}.result .sub{color:var(--muted);font-size:12px;margin-top:3px;line-height:1.4}
+.metrics{display:grid;grid-template-columns:repeat(2,1fr);gap:8px;margin-top:10px}.metric{background:#0d131e;border:1px solid #263247;border-radius:12px;padding:10px}.metric b{display:block;font-size:15px}.metric span{color:var(--muted);font-size:10px;text-transform:uppercase;letter-spacing:.05em}
+.status{margin-top:10px;border-radius:12px;padding:10px 11px;font-size:12px;line-height:1.45;border:1px solid}.status.good{color:#bdf6d1;background:rgba(85,214,138,.08);border-color:rgba(85,214,138,.28)}.status.warn{color:#ffe0a0;background:rgba(240,195,90,.08);border-color:rgba(240,195,90,.28)}.status.bad{color:#ffc0c8;background:rgba(255,107,122,.08);border-color:rgba(255,107,122,.28)}
+.toolbar{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}.btn{border:1px solid #33425c;background:#121a29;color:#dbe7ff;border-radius:10px;padding:8px 10px;font-size:12px;font-weight:700;cursor:pointer}.btn:hover{border-color:#5374a8}.btn.primary{background:linear-gradient(135deg,#285b9e,#5942a0);border-color:#5c75b2;color:#fff}
+.note{font-size:11px;color:#7f8da4;line-height:1.5;margin-top:10px}.switchline{display:flex;align-items:center;gap:8px;color:#b8c3d5;font-size:12px}.switchline input{width:auto}
+.sep{height:1px;background:var(--line);margin:12px 0}.footer{padding:0 16px 16px;color:#6f7d94;font-size:10px;text-align:center}
+@media(max-width:620px){body{padding:8px}.widget{border-radius:18px}.tabs{grid-template-columns:repeat(2,1fr)}.grid,.grid.three,.row{grid-template-columns:1fr}.metrics{grid-template-columns:1fr 1fr}.head{padding:15px 14px 10px}.body{padding:12px}.brand{align-items:flex-start}.badge{font-size:10px}}
+</style>
+</head>
+<body>
+<div class="widget" id="astroWidget">
+  <div class="head">
+    <div class="brand">
+      <div><h1>Astro Widget Pro</h1><small>Sampling • Planetarne • Drizzle • Integracja</small></div>
+      <div style="display:flex;gap:7px;align-items:center"><button id="installApp" class="installBtn" type="button">Zainstaluj</button><span class="badge">offline / live</span></div>
+    </div>
+    <div class="tabs">
+      <button class="tab active" data-tab="sampling">Sampling</button>
+      <button class="tab" data-tab="planetary">Planetarne</button>
+      <button class="tab" data-tab="drizzle">Drizzle</button>
+      <button class="tab" data-tab="integration">Integracja</button>
+    </div>
+  </div>
+
+  <div class="body">
+    <section class="pane active" id="sampling">
+      <div class="grid">
+        <div class="card">
+          <h2>Skala piksela i pole widzenia</h2>
+          <p class="desc">Liczone bez zgadywania: 206,265 × piksel / ogniskowa. Ocena samplingu zależy od podanego seeingu, a nie od arbitralnego progu.</p>
+          <div class="row">
+            <div class="field"><label>Ogniskowa [mm]</label><input id="s_fl" type="number" step="1" value="1000"></div>
+            <div class="field"><label>Piksel [µm]</label><input id="s_px" type="number" step="0.01" value="3.76"></div>
+          </div>
+          <div class="row">
+            <div class="field"><label>Sensor szer. [mm]</label><input id="s_sw" type="number" step="0.1" value="23.5"></div>
+            <div class="field"><label>Sensor wys. [mm]</label><input id="s_sh" type="number" step="0.1" value="15.7"></div>
+          </div>
+          <div class="field"><label>Seeing FWHM ["]</label><input id="s_seeing" type="number" step="0.1" value="2.0"></div>
+          <div class="toolbar">
+            <button class="btn" data-preset="2600_1000">ASI2600 + 1000 mm</button>
+            <button class="btn" data-preset="2600_800">ASI2600 + 800 mm</button>
+          </div>
+        </div>
+        <div class="card">
+          <h2>Wynik</h2><p class="desc">Najważniejsza liczba: ile pikseli przypada na FWHM gwiazdy.</p>
+          <div class="result"><div class="big" id="s_scale">—</div><div class="sub">arcsec / piksel</div></div>
+          <div class="metrics">
+            <div class="metric"><b id="s_fov">—</b><span>Pole widzenia</span></div>
+            <div class="metric"><b id="s_fwhmpx">—</b><span>FWHM w pikselach</span></div>
+          </div>
+          <div id="s_status" class="status good">—</div>
+        </div>
+      </div>
+    </section>
+
+    <section class="pane" id="planetary">
+      <div class="grid">
+        <div class="card">
+          <h2>Sampling planetarny</h2>
+          <p class="desc">Pokazuje aktualne f/ oraz praktyczny punkt odniesienia „5× piksel”. Dodatkowo podaje skalę obrazu i sampling względem granicy dyfrakcyjnej.</p>
+          <div class="row">
+            <div class="field"><label>Apertura [mm]</label><input id="p_ap" type="number" step="1" value="200"></div>
+            <div class="field"><label>Ogniskowa [mm]</label><input id="p_fl" type="number" step="1" value="1000"></div>
+          </div>
+          <div class="row">
+            <div class="field"><label>Piksel [µm]</label><input id="p_px" type="number" step="0.01" value="1.45"></div>
+            <div class="field"><label>Barlow / Powermate [×]</label><input id="p_bar" type="number" step="0.1" value="2"></div>
+          </div>
+          <div class="field"><label>Długość fali odniesienia</label>
+            <select id="p_wave"><option value="550">550 nm — RGB / green</option><option value="685" selected>685 nm — IR-pass</option><option value="742">742 nm — IR</option><option value="850">850 nm — IR</option></select>
+          </div>
+          <div class="toolbar">
+            <button class="btn" data-ppreset="715">ASI715MC</button><button class="btn" data-ppreset="678">ASI678MM/MC</button><button class="btn" data-ppreset="2600">ASI2600</button>
+          </div>
+        </div>
+        <div class="card">
+          <h2>Wynik</h2><p class="desc">Reguła 5× jest praktyczna, ale nie jest prawem fizyki — seeing zwykle ogranicza więcej niż sama dyfrakcja.</p>
+          <div class="result"><div class="big" id="p_fratio">—</div><div class="sub">aktualne f/ po Barlow</div></div>
+          <div class="metrics">
+            <div class="metric"><b id="p_scale">—</b><span>Skala ["/px]</span></div>
+            <div class="metric"><b id="p_target">—</b><span>5× piksel</span></div>
+            <div class="metric"><b id="p_rayleigh">—</b><span>Rayleigh ["]</span></div>
+            <div class="metric"><b id="p_respx">—</b><span>px / Rayleigh</span></div>
+          </div>
+          <div id="p_status" class="status good">—</div>
+        </div>
+      </div>
+    </section>
+
+    <section class="pane" id="drizzle">
+      <div class="grid">
+        <div class="card">
+          <h2>Czy drizzle ma sens?</h2>
+          <p class="desc">Decyzja opiera się na FWHM gwiazdy w pikselach, ditheringu i liczbie klatek. Drizzle nie tworzy detalu, którego nie ma w danych.</p>
+          <div class="row">
+            <div class="field"><label>Ogniskowa [mm]</label><input id="d_fl" type="number" value="1000"></div>
+            <div class="field"><label>Piksel [µm]</label><input id="d_px" type="number" step="0.01" value="3.76"></div>
+          </div>
+          <div class="row">
+            <div class="field"><label>Seeing / FWHM ["]</label><input id="d_seeing" type="number" step="0.1" value="2.0"></div>
+            <div class="field"><label>Liczba klatek</label><input id="d_n" type="number" step="1" value="45"></div>
+          </div>
+          <div class="field switchline"><input id="d_dither" type="checkbox" checked><span>Materiał jest ditheringowany</span></div>
+        </div>
+        <div class="card">
+          <h2>Rekomendacja techniczna</h2>
+          <div class="result"><div class="big" id="d_rec">—</div><div class="sub">zalecany scale factor</div></div>
+          <div class="metrics">
+            <div class="metric"><b id="d_scale">—</b><span>Bazowa skala</span></div>
+            <div class="metric"><b id="d_fwhm">—</b><span>FWHM [px]</span></div>
+            <div class="metric"><b id="d_2x">—</b><span>FWHM po 2×</span></div>
+            <div class="metric"><b id="d_3x">—</b><span>FWHM po 3×</span></div>
+          </div>
+          <div id="d_status" class="status good">—</div>
+          <p class="note">W PixInsight wynik 2× drizzle ma 4× więcej pikseli obrazu, a 3× — 9×. To koszt RAM/dysku, nie automatyczny wzrost rozdzielczości.</p>
+        </div>
+      </div>
+    </section>
+
+    <section class="pane" id="integration">
+      <div class="card">
+        <h2>Porównanie czasu integracji — obiekty rozciągłe</h2>
+        <p class="desc">Model dla mgławic/galaktyk w reżimie background-limited. Zamiast sztucznych mnożników Bortle używa jasności nieba w mag/arcsec² (SQM), światłosiły i względnej sprawności toru.</p>
+        <div class="grid">
+          <div>
+            <label>Zestaw bazowy</label>
+            <div class="row"><div class="field"><label>Ogniskowa [mm]</label><input id="i_fl1" type="number" value="1000"></div><div class="field"><label>Apertura [mm]</label><input id="i_ap1" type="number" value="200"></div></div>
+            <div class="row"><div class="field"><label>SQM [mag/arcsec²]</label><input id="i_sqm1" type="number" step="0.1" value="20.9"></div><div class="field"><label>Sprawność wzgl. [%]</label><input id="i_eff1" type="number" step="1" value="100"></div></div>
+            <div class="field"><label>Integracja bazowa [h]</label><input id="i_t1" type="number" step="0.1" value="10"></div>
+            <div class="toolbar"><button class="btn sky" data-target="1" data-sqm="21.7">B2</button><button class="btn sky" data-target="1" data-sqm="21.3">B3</button><button class="btn sky" data-target="1" data-sqm="20.9">B4</button><button class="btn sky" data-target="1" data-sqm="20.3">B5</button></div>
+          </div>
+          <div>
+            <label>Zestaw docelowy</label>
+            <div class="row"><div class="field"><label>Ogniskowa [mm]</label><input id="i_fl2" type="number" value="1000"></div><div class="field"><label>Apertura [mm]</label><input id="i_ap2" type="number" value="250"></div></div>
+            <div class="row"><div class="field"><label>SQM [mag/arcsec²]</label><input id="i_sqm2" type="number" step="0.1" value="21.7"></div><div class="field"><label>Sprawność wzgl. [%]</label><input id="i_eff2" type="number" step="1" value="100"></div></div>
+            <div class="field"><label>Tryb porównania</label><select id="i_mode"><option value="snr">Ten sam SNR</option><option value="time">Ten sam czas — pokaż zmianę SNR</option></select></div>
+            <div class="toolbar"><button class="btn sky" data-target="2" data-sqm="21.7">B2</button><button class="btn sky" data-target="2" data-sqm="21.3">B3</button><button class="btn sky" data-target="2" data-sqm="20.9">B4</button><button class="btn sky" data-target="2" data-sqm="20.3">B5</button></div>
+          </div>
+        </div>
+        <div class="sep"></div>
+        <div class="grid">
+          <div class="result"><div class="big" id="i_main">—</div><div class="sub" id="i_main_sub">—</div></div>
+          <div>
+            <div class="metrics">
+              <div class="metric"><b id="i_f1">—</b><span>Światłosiła bazowa</span></div>
+              <div class="metric"><b id="i_f2">—</b><span>Światłosiła docelowa</span></div>
+              <div class="metric"><b id="i_sky">—</b><span>Niebo 2 vs 1</span></div>
+              <div class="metric"><b id="i_gain">—</b><span>Tempo SNR 2 vs 1</span></div>
+            </div>
+            <div id="i_status" class="status good">—</div>
+          </div>
+        </div>
+        <p class="note">Uwaga: to porównanie nie zastępuje pełnego modelu kamery (QE, read noise, dark current), filtrów i jasności obiektu. Dla tej samej kamery i filtra jest jednak znacznie sensowniejsze niż samo „Bortle × f²”.</p>
+      </div>
+    </section>
+  </div>
+  <div class="footer">Dane zapisują się lokalnie. Po instalacji aplikacja działa również offline.</div>
+</div>
+
+<script>
+const $=id=>document.getElementById(id);
+const num=id=>parseFloat($(id).value);
+const ok=v=>Number.isFinite(v)&&v>0;
+const fmt=(v,d=2)=>Number.isFinite(v)?v.toFixed(d):'—';
+function setStatus(id,cls,html){const el=$(id);el.className='status '+cls;el.innerHTML=html}
+function plateScale(px,fl){return 206.265*px/fl}
+function fovDeg(sensor,fl){return 2*Math.atan(sensor/(2*fl))*180/Math.PI}
+
+function calcSampling(){
+ const fl=num('s_fl'),px=num('s_px'),sw=num('s_sw'),sh=num('s_sh'),seeing=num('s_seeing'); if(![fl,px,sw,sh,seeing].every(ok)) return;
+ const scale=plateScale(px,fl), fwhm=seeing/scale, fw=fovDeg(sw,fl), fh=fovDeg(sh,fl);
+ $('s_scale').textContent=fmt(scale,3)+'″/px'; $('s_fov').textContent=fmt(fw,2)+'° × '+fmt(fh,2)+'°'; $('s_fwhmpx').textContent=fmt(fwhm,2)+' px';
+ if(fwhm<1.6) setStatus('s_status','bad','Wyraźny <b>undersampling</b>. Gwiazda ma mniej niż ~1,6 px FWHM; dither + 2× drizzle może realnie pomóc.');
+ else if(fwhm<2.2) setStatus('s_status','warn','Lekki <b>undersampling</b>. Materiał jest użyteczny, ale 2× drizzle może poprawić rekonstrukcję przy dobrym ditheringu.');
+ else if(fwhm<=4.0) setStatus('s_status','good','<b>Dobre dopasowanie.</b> Seeing jest próbkowany przez ~2,2–4 px FWHM.');
+ else setStatus('s_status','warn','<b>Oversampling względem seeingu.</b> Więcej pikseli na gwiazdę nie oznacza większej rozdzielczości; kosztujesz głównie SNR/piksel i rozmiar plików.');
+}
+
+function calcPlanetary(){
+ const ap=num('p_ap'),fl=num('p_fl'),px=num('p_px'),bar=num('p_bar'),wave=num('p_wave'); if(![ap,fl,px,bar,wave].every(ok)) return;
+ const effFl=fl*bar, fr=effFl/ap, scale=plateScale(px,effFl), target=5*px, rayleigh=0.251643*wave/ap, respx=rayleigh/scale, ratio=fr/target;
+ $('p_fratio').textContent='f/'+fmt(fr,1); $('p_scale').textContent=fmt(scale,3)+'″/px'; $('p_target').textContent='f/'+fmt(target,1); $('p_rayleigh').textContent=fmt(rayleigh,3)+'″'; $('p_respx').textContent=fmt(respx,1)+' px';
+ if(ratio<0.75) setStatus('p_status','warn','Jesteś <b>poniżej praktycznego zakresu 5×</b>. Przy bardzo dobrym seeingu większa efektywna ogniskowa może wykorzystać więcej detalu.');
+ else if(ratio<=1.25) setStatus('p_status','good','<b>Praktyczny sweet spot.</b> Aktualne f/ jest blisko reguły 5× wielkość piksela.');
+ else if(ratio<=1.6) setStatus('p_status','warn','Lekki <b>oversampling</b>. Nadal bywa użyteczny przy bardzo dobrym seeingu i obróbce, ale wymaga więcej światła / gainu.');
+ else setStatus('p_status','bad','Mocny <b>oversampling</b>. Zwykle tracisz FPS i SNR bez proporcjonalnego zysku detalu.');
+}
+
+function calcDrizzle(){
+ const fl=num('d_fl'),px=num('d_px'),seeing=num('d_seeing'),n=num('d_n'),dither=$('d_dither').checked; if(![fl,px,seeing,n].every(ok)) return;
+ const scale=plateScale(px,fl), fwhm=seeing/scale; $('d_scale').textContent=fmt(scale,3)+'″/px'; $('d_fwhm').textContent=fmt(fwhm,2)+' px'; $('d_2x').textContent=fmt(fwhm*2,2)+' px'; $('d_3x').textContent=fmt(fwhm*3,2)+' px';
+ let rec='1×',cls='good',msg='Drizzle nie jest potrzebny do odzyskania rozdzielczości.';
+ if(!dither){rec='1×';cls='bad';msg='<b>Brak ditheringu.</b> Drizzle traci swój główny sens rekonstrukcyjny. Najpierw dither, potem drizzle.';}
+ else if(n<12){rec='1×';cls='warn';msg='Masz mało klatek. Drizzle może być niestabilny i podbić artefakty / szum.';}
+ else if(fwhm<1.55){rec='2×';cls='good';msg='<b>2× drizzle jest uzasadniony.</b> Dane są wyraźnie undersamplowane i dithering może odzyskać subpikselową informację.';}
+ else if(fwhm<2.2){rec='2× opcjonalnie';cls='good';msg='Lekki undersampling. <b>2× drizzle ma sens</b>, szczególnie dla gwiazd i drobnych struktur. 3× zwykle nie wniesie proporcjonalnie więcej.';}
+ else if(fwhm<=3.5){rec='1× / 2× kosmetycznie';cls='warn';msg='Sampling jest już dobry. 2× może dać przyjemniejsze resampling/obróbkę, ale <b>nie oczekuj nowej rozdzielczości</b>.';}
+ else {rec='1×';cls='warn';msg='Materiał jest oversamplowany względem seeingu. Drizzle tylko zwiększy obraz i wymagania sprzętowe.';}
+ $('d_rec').textContent=rec; setStatus('d_status',cls,msg);
+}
+
+function calcIntegration(){
+ const fl1=num('i_fl1'),ap1=num('i_ap1'),sqm1=num('i_sqm1'),eff1=num('i_eff1')/100,t1=num('i_t1');
+ const fl2=num('i_fl2'),ap2=num('i_ap2'),sqm2=num('i_sqm2'),eff2=num('i_eff2')/100; if(![fl1,ap1,eff1,t1,fl2,ap2,eff2].every(ok)||!Number.isFinite(sqm1)||!Number.isFinite(sqm2)) return;
+ const f1=fl1/ap1,f2=fl2/ap2;
+ // sky surface brightness flux ratio B2/B1; higher SQM = darker = lower flux
+ const skyRatio=Math.pow(10,-0.4*(sqm2-sqm1));
+ // sky-limited extended source: SNR rate coefficient ~ sqrt(eff)/(f*sqrt(skyFlux))
+ const snrRateRatio=(Math.sqrt(eff2)/f2/Math.sqrt(skyRatio))/(Math.sqrt(eff1)/f1);
+ const timeRatio=1/(snrRateRatio*snrRateRatio), t2=t1*timeRatio;
+ $('i_f1').textContent='f/'+fmt(f1,2); $('i_f2').textContent='f/'+fmt(f2,2); $('i_sky').textContent=fmt(skyRatio,2)+'×'; $('i_gain').textContent=fmt(snrRateRatio,2)+'×';
+ if($('i_mode').value==='snr'){
+   const h=Math.floor(t2),m=Math.round((t2-h)*60); $('i_main').textContent=(h? h+' h ':'')+m+' min'; $('i_main_sub').textContent='czas zestawu docelowego dla tego samego SNR co '+fmt(t1,1)+' h bazowo';
+ } else {
+   const gainSameTime=snrRateRatio; $('i_main').textContent=fmt(gainSameTime,2)+'× SNR'; $('i_main_sub').textContent='SNR zestawu docelowego przy tym samym czasie '+fmt(t1,1)+' h';
+ }
+ if(timeRatio<0.65) setStatus('i_status','good','Zestaw docelowy osiąga ten sam SNR <b>wyraźnie szybciej</b> w tym modelu.');
+ else if(timeRatio<0.9) setStatus('i_status','good','Zestaw docelowy ma <b>umiarkowaną przewagę</b> w tempie zbierania SNR.');
+ else if(timeRatio<=1.1) setStatus('i_status','warn','Oba zestawy są <b>zbliżone</b> pod względem czasu do tego samego SNR.');
+ else setStatus('i_status','bad','Zestaw docelowy potrzebuje <b>więcej czasu</b> do tego samego SNR w podanych warunkach.');
+}
+
+function recalc(){calcSampling();calcPlanetary();calcDrizzle();calcIntegration();saveState()}
+
+document.querySelectorAll('input,select').forEach(el=>el.addEventListener('input',recalc));
+document.querySelectorAll('.tab').forEach(b=>b.addEventListener('click',()=>{document.querySelectorAll('.tab').forEach(x=>x.classList.remove('active'));document.querySelectorAll('.pane').forEach(x=>x.classList.remove('active'));b.classList.add('active');$(b.dataset.tab).classList.add('active');localStorage.setItem('astroTab',b.dataset.tab)}));
+document.querySelectorAll('.sky').forEach(b=>b.addEventListener('click',()=>{ $('i_sqm'+b.dataset.target).value=b.dataset.sqm; recalc(); }));
+document.querySelectorAll('[data-preset]').forEach(b=>b.addEventListener('click',()=>{if(b.dataset.preset==='2600_1000'){ $('s_fl').value=1000;$('s_px').value=3.76;$('s_sw').value=23.5;$('s_sh').value=15.7;} if(b.dataset.preset==='2600_800'){ $('s_fl').value=800;$('s_px').value=3.76;$('s_sw').value=23.5;$('s_sh').value=15.7;} recalc();}));
+document.querySelectorAll('[data-ppreset]').forEach(b=>b.addEventListener('click',()=>{const k=b.dataset.ppreset;if(k==='715')$('p_px').value=1.45;if(k==='678')$('p_px').value=2.0;if(k==='2600')$('p_px').value=3.76;recalc();}));
+
+const stateIds=['s_fl','s_px','s_sw','s_sh','s_seeing','p_ap','p_fl','p_px','p_bar','p_wave','d_fl','d_px','d_seeing','d_n','d_dither','i_fl1','i_ap1','i_sqm1','i_eff1','i_t1','i_fl2','i_ap2','i_sqm2','i_eff2','i_mode'];
+function saveState(){const o={};stateIds.forEach(id=>o[id]=$(id).type==='checkbox'?$(id).checked:$(id).value);try{localStorage.setItem('astroWidgetPro',JSON.stringify(o))}catch(e){}}
+function loadState(){try{const o=JSON.parse(localStorage.getItem('astroWidgetPro')||'{}');stateIds.forEach(id=>{if(o[id]!==undefined){if($(id).type==='checkbox')$(id).checked=o[id];else $(id).value=o[id]}});const tab=localStorage.getItem('astroTab');if(tab&&$(tab)){document.querySelectorAll('.tab').forEach(x=>x.classList.toggle('active',x.dataset.tab===tab));document.querySelectorAll('.pane').forEach(x=>x.classList.toggle('active',x.id===tab));}}catch(e){}}
+loadState();recalc();
+
+// PWA: instalacja + praca offline
+let deferredInstallPrompt=null;
+const installButton=document.getElementById('installApp');
+window.addEventListener('beforeinstallprompt',(event)=>{
+  event.preventDefault();
+  deferredInstallPrompt=event;
+  installButton?.classList.add('show');
+});
+installButton?.addEventListener('click',async()=>{
+  if(!deferredInstallPrompt) return;
+  deferredInstallPrompt.prompt();
+  try{ await deferredInstallPrompt.userChoice; }catch(e){}
+  deferredInstallPrompt=null;
+  installButton.classList.remove('show');
+});
+window.addEventListener('appinstalled',()=>{
+  deferredInstallPrompt=null;
+  installButton?.classList.remove('show');
+});
+if('serviceWorker' in navigator){
+  window.addEventListener('load',()=>navigator.serviceWorker.register('./service-worker.js').catch(()=>{}));
+}
+</script>
+</body>
+</html>
