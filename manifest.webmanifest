@@ -1,7 +1,7 @@
 {
   "name": "AstroCalc — kalkulatory astrofotograficzne",
   "short_name": "AstroCalc",
-  "description": "Sampling DSO, optyka planetarna, drizzle i porównanie integracji.",
+  "description": "Sampling DSO, optyka planetarna, drizzle i porównanie integracji z filtrami.",
   "start_url": "./index.html",
   "scope": "./",
   "display": "standalone",
